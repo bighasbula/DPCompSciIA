@@ -25,6 +25,9 @@ selected_topic = st.selectbox("Select a topic", topic_options)
 type_options = ["Any"] + get_types()
 selected_type = st.selectbox("Select problem type", type_options)
 
+timer_options = ["With timer"] + ["No timer"]
+selected_timer = st.selectbox("Select your timer preferance", timer_options)
+
 # ACTION
 if st.button("Find a problem"):
     matching_problems = filter_problems(
@@ -42,6 +45,15 @@ if st.button("Find a problem"):
         st.caption(
             f'{chosen["topic"]} • {chosen["type"]} • {chosen["time"]} • {chosen["level"]} '
         )
+        st.session_state["selected_problem"] = chosen
+        if selected_timer == "With timer":
+            st.session_state["mode"]="With timer"
+            st.session_state["minutes"]=chosen["time"]
+            
+        elif selected_timer == "No timer":
+            st.session_state["mode"]="No timer"
+        
+        st.switch_page("pages/page_1.py")
     else:
         st.warning("No problems match your criteria. We chose a random question for you")
         random.choice(problems)

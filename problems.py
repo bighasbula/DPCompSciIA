@@ -6,8 +6,9 @@ problems = [
         "difficulty": 4,
         "time": 10,
         "type": "Calculation",
-        "question": "Solve x² - 5x + 6 = 0",
-        "level": 3
+        "question": "Find roots of equation x² - 5x + 6 = 0",
+        "level": 3,
+        "answer": "2, 3"
     },
     {
         "id": 2,
@@ -17,7 +18,8 @@ problems = [
         "time": 25,
         "type": "Calculation",
         "question": "Find the area under y = x² from x = 0 to x = 3",
-        "level": 5
+        "level": 5,
+        "answer": "9"
     },
     {
         "id": 3,
@@ -27,6 +29,7 @@ problems = [
         "time": 15,
         "type": "Proof",
         "question": "Prove that the angle in a semicircle is 90°",
-        "level": 4
+        "level": 4,
+        "answer": "byh"
     }
 ]
