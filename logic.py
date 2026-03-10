@@ -29,6 +29,11 @@ def check_answer(user_input, correct_answer):
         user=sympify(user_input)
         correct=sympify(correct_answer)
 
-        return simplify(user-correct)==0
-    except:
+
+        if isinstance(user, tuple) and isinstance(correct, tuple):
+            return user == correct
+
+        return simplify(user-correct)==0 
+    except Exception as e:
+        print(f"Error occurred while checking answer: {e}")
         return False

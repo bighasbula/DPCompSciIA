@@ -48,9 +48,11 @@ st.write(problem["question"])
 math_answer = st.text_input("Your answer")
 
 if st.button("Submit a solution"):
-    if mode == "No timer":
-        current_time = time.time()
-        lapsed_time = current_time - st.session_state.start_time
+    
+    current_time = time.time()
+    
+    lapsed_time = current_time - st.session_state.start_time
+    
     st.session_state["time_on_task"]= format_time(lapsed_time)
     
 
@@ -58,6 +60,7 @@ if st.button("Submit a solution"):
 
     if check_answer(math_answer, problem["answer"]):
         st.success("correct")
+
 
     else:
         st.error("Wrong")
