@@ -18,8 +18,8 @@ def filter_problems(max_time, topic, type, level):
     filtered=[]
     for problem in problems:
         if(problem["time"]<=max_time):
-            if(problem["topic"]=="Any" or problem["topic"]==topic):
-                if(problem["type"]=="Any" or problem["type"]==type):
+            if(topic=="Any" or problem["topic"]==topic):
+                if(type=="Any" or problem["type"]==type):
                     if(problem["level"]<=level):
                         filtered.append(problem)
     return filtered

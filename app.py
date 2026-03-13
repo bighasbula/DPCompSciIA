@@ -39,21 +39,32 @@ if st.button("Find a problem"):
 
     if matching_problems:
         chosen = random.choice(matching_problems)
-
-        st.subheader(chosen["title"])
-        st.write(chosen["question"])
-        st.caption(
-            f'{chosen["topic"]} • {chosen["type"]} • {chosen["time"]} • {chosen["level"]} '
-        )
-        st.session_state["selected_problem"] = chosen
-        if selected_timer == "With timer":
-            st.session_state["mode"]="With timer"
-            st.session_state["minutes"]=chosen["time"]
-            
-        elif selected_timer == "No timer":
-            st.session_state["mode"]="No timer"
-        
-        st.switch_page("pages/page_1.py")
     else:
         st.warning("No problems match your criteria. We chose a random question for you")
-        random.choice(problems)
+        chosen = random.choice(problems)
+
+    st.subheader(chosen["title"])
+    st.write(chosen["question"])
+    st.caption(
+        f'{chosen["topic"]} • {chosen["type"]} • {chosen["time"]} min • level {chosen["level"]}'
+    )
+
+    st.session_state["selected_problem"] = chosen
+    st.session_state["attempt_answer"] = ""
+    st.session_state["submitted"] = False
+    st.session_state["is_correct"] = None
+    st.session_state["time_on_task"] = None
+
+    if selected_timer == "With timer":
+        st.session_state["mode"] = "With timer"
+        st.session_state["minutes"] = int(chosen["time"])
+    else:
+        st.session_state["mode"] = "No timer"
+        st.session_state.pop("minutes", None)
+
+    
+    st.session_state.pop("start_time", None)
+    st.session_state.pop("deadline_ts", None)
+    st.session_state.pop("time_up", None)
+
+    st.switch_page("pages/page_1.py")
