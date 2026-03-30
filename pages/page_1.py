@@ -53,12 +53,59 @@ if mode == "With timer":
     remaining = int(st.session_state["deadline_ts"] - time.time())
     if remaining <= 0:
         remaining = 0
-        st.session_state["time_up"] = True
+        # mark time up; if not submitted yet, record timed-out result and go to page_2
+        if not st.session_state.get("submitted", False) and not st.session_state.get("timed_out_handled", False):
+            st.session_state["time_up"] = True
+            problem_obj = st.session_state.get("selected_problem", {})
+            st.session_state["last_result"] = {
+                "correct": False,
+                "user_answer": None,
+                "correct_answer": problem_obj.get("answer") if problem_obj else None,
+                "time_on_task": format_time(int(st.session_state.get("deadline_ts", time.time()) - st.session_state.get("start_time", time.time()))),
+                "lapsed_seconds": int(st.session_state.get("deadline_ts", time.time()) - st.session_state.get("start_time", time.time())),
+                "problem": problem_obj,
+                "timed_out": True,
+            }
+            st.session_state["timed_out_handled"] = True
+            st.switch_page("pages/page_2.py")
+        else:
+            st.session_state["time_up"] = True
 
 with timer_col:
     if mode == "With timer":
         st.write("Timer")
-        st.metric("Remaining", format_time(remaining))
+        # Styled client-side countdown that updates every second.
+        deadline_ms = int(float(st.session_state.get("deadline_ts", time.time())) * 1000)
+        html = f"""
+<style>
+  #countdown-wrap {{ display:flex; flex-direction:column; align-items:center; gap:6px; }}
+  #countdown-title {{ font-size:13px; color:#666; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }}
+  #countdown {{ font-size:28px; font-weight:600; color:#111; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:transparent; }}
+  #countdown.small-warning {{ color: #b91c1c; }}
+</style>
+<div id='countdown-wrap'>
+  <div id='countdown-title'>Remaining</div>
+  <div id='countdown'>--:--:--</div>
+</div>
+<script>
+const deadline = {deadline_ms};
+function pad(n) {{ return String(n).padStart(2,'0'); }}
+function update() {{
+  const now = Date.now();
+  let diff = Math.max(0, Math.floor((deadline - now) / 1000));
+  let hrs = Math.floor(diff / 3600);
+  let mins = Math.floor((diff % 3600) / 60);
+  let secs = diff % 60;
+  const el = document.getElementById('countdown');
+  el.innerText = pad(hrs) + ':' + pad(mins) + ':' + pad(secs);
+  if (diff <= 10) {{ el.classList.add('small-warning'); }} else {{ el.classList.remove('small-warning'); }}
+  if (diff <= 0) {{ if (!window._reloaded_on_timeout) {{ window._reloaded_on_timeout = true; window.location.reload(); }} }}
+}}
+update();
+setInterval(update, 1000);
+</script>
+"""
+        components.html(html, height=110)
         if st.session_state.get("time_up", False) and not st.session_state.get("submitted", False):
             st.error("Time is up. Submission is locked.")
     else:
@@ -80,6 +127,17 @@ if st.button("Submit a solution", disabled=submit_disabled):
     st.session_state["is_correct"] = bool(is_correct)
     st.session_state["submitted"] = True
 
+    # record last result for page_2
+    st.session_state["last_result"] = {
+        "correct": st.session_state["is_correct"],
+        "user_answer": st.session_state.get("attempt_answer"),
+        "correct_answer": problem.get("answer"),
+        "time_on_task": st.session_state.get("time_on_task"),
+        "lapsed_seconds": lapsed_time,
+        "problem": problem,
+        "timed_out": False,
+    }
+
     st.switch_page("pages/page_2.py")
 
 nav_col1, nav_col2 = st.columns([1, 1])
@@ -88,12 +146,10 @@ with nav_col1:
         st.switch_page("app.py")
 with nav_col2:
     if st.button("Reset this problem"):
-        for k in ["start_time", "deadline_ts", "time_up", "submitted", "is_correct", "time_on_task"]:
+        for k in ["start_time", "deadline_ts", "time_up", "submitted", "is_correct", "time_on_task", "timed_out_handled"]:
             st.session_state.pop(k, None)
         st.session_state["attempt_answer"] = ""
         st.rerun()
 
-# Non-blocking timer: refresh the script once per second while the timer is running.
-if running_timer and remaining is not None and remaining > 0 and not st.session_state.get("time_up", False):
-    components.html("<meta http-equiv='refresh' content='1'>", height=0, width=0)
+# end
 
